@@ -139,8 +139,26 @@
       margin: 0;
     }
 
+    .content-grid.top-output {
+      grid-template-columns: 1fr;
+      max-width: 1200px;
+      margin: 0;
+    }
+
+    .content-grid.top-output #outputContainer {
+      order: -1;
+    }
+
+    .content-grid.top-output #uploadCard {
+      order: 1;
+    }
+
     @media (max-width: 1024px) {
       .content-grid.split {
+        grid-template-columns: 1fr;
+      }
+      
+      .content-grid.top-output {
         grid-template-columns: 1fr;
       }
     }
@@ -198,6 +216,10 @@
       margin-bottom: 0.5rem;
     }
 
+    .form-label .required {
+      color: var(--danger-color);
+    }
+
     .form-input {
       width: 100%;
       padding: 0.75rem 1rem;
@@ -249,6 +271,10 @@
       transform: scale(1.02);
     }
 
+    .upload-area.hidden {
+      display: none;
+    }
+
     .upload-icon {
       font-size: 3rem;
       color: var(--text-muted);
@@ -280,15 +306,71 @@
 
     .file-selected {
       margin-top: 1rem;
-      padding: 0.75rem;
+      padding: 1rem;
       background: rgba(16, 185, 129, 0.1);
       border: 1px solid rgba(16, 185, 129, 0.2);
       border-radius: var(--radius-md);
-      display: flex;
+      display: none;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
       color: var(--secondary-color);
       font-weight: 500;
+    }
+
+    .file-selected.show {
+      display: flex;
+    }
+
+    .file-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .file-size {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .file-action-btn {
+      padding: 0.5rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+
+    .preview-btn {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary-color);
+    }
+
+    .preview-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .delete-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .delete-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
     }
 
     /* Buttons */
@@ -542,6 +624,80 @@
       transition: width 0.3s ease;
     }
 
+    /* CSV Preview Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+      box-shadow: var(--shadow-xl);
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+      background: var(--border-light);
+    }
+
+    .csv-preview {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      max-height: 60vh;
+      overflow: auto;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header-content {
@@ -579,6 +735,21 @@
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
+      }
+
+      .modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+
+      .file-selected {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      .file-actions {
+        justify-content: center;
       }
     }
 
@@ -623,6 +794,10 @@
     .slide-left {
       animation: slideLeft 0.5s ease-out;
     }
+
+    .convertBtn{
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -638,12 +813,6 @@
             <h1>KonfigAI</h1>
             <p>Release Notes Generator</p>
           </div>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-secondary btn-sm" id="downloadBtnHeader" style="display: none;">
-            <i class="fas fa-download"></i>
-            Download JSON
-          </button>
         </div>
       </div>
     </header>
@@ -666,16 +835,16 @@
             <!-- Release Configuration -->
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="appVersion">App Version *</label>
+                <label class="form-label" for="appVersion">App Version <span class="required">*</span></label>
                 <input type="text" id="appVersion" class="form-input" placeholder="e.g., 1.0.0" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="releaseDate">Release Date *</label>
+                <label class="form-label" for="releaseDate">Release Date <span class="required">*</span></label>
                 <input type="date" id="releaseDate" class="form-input" required>
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label" for="releaseManager">Release Manager *</label>
+              <label class="form-label" for="releaseManager">Release Manager <span class="required">*</span></label>
               <input type="text" id="releaseManager" class="form-input" placeholder="e.g., John Doe" required>
             </div>
 
@@ -688,9 +857,19 @@
               <div class="upload-subtext">or click to browse files</div>
             </div>
             
-            <div id="fileSelected" class="file-selected" style="display: none;">
-              <i class="fas fa-file-csv"></i>
-              <span id="fileName"></span>
+            <div id="fileSelected" class="file-selected">
+              <div class="file-info">
+                <i class="fas fa-file-csv"></i>
+                <div>
+                  <div class="file-name" id="fileName"></div>
+                  <div class="file-size" id="fileSize"></div>
+                </div>
+              </div>
+              <div class="file-actions">
+                <button class="file-action-btn delete-btn" id="deleteBtn" title="Remove file">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
 
             <div class="progress-container" id="progressContainer">
@@ -699,7 +878,7 @@
               </div>
             </div>
 
-            <button class="btn btn-primary btn-full" id="convertBtn" disabled>
+            <button class="btn btn-primary btn-full convertBtn" id="convertBtn" disabled>
               <i class="fas fa-cogs"></i>
               Generate Release Notes
             </button>
@@ -719,6 +898,10 @@
                   Your structured release notes in JSON format
                 </p>
               </div>
+              <button class="btn btn-secondary btn-sm" id="downloadBtnHeader" style="display: none;">
+            <i class="fas fa-download"></i>
+            Download JSON
+          </button>
             </div>
           </div>
           <div class="card-content">
@@ -747,17 +930,34 @@
         </div>
       </div>
     </main>
+
+    <!-- CSV Preview Modal -->
+    <div class="modal" id="csvModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">CSV File Preview</h3>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="csv-preview" id="csvPreview"></div>
+      </div>
+    </div>
   </div>
 
   <script>
     let generatedJSON = null;
     let appVersion = "0.0.1";
+    let currentFile = null;
 
     // DOM Elements
     const csvFileInput = document.getElementById('csvFile');
     const uploadArea = document.getElementById('uploadArea');
     const fileSelected = document.getElementById('fileSelected');
     const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const previewBtn = document.getElementById('previewBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
     const convertBtn = document.getElementById('convertBtn');
     const outputContainer = document.getElementById('outputContainer');
     const output = document.getElementById('output');
@@ -767,6 +967,9 @@
     const progressFill = document.getElementById('progressFill');
     const statsGrid = document.getElementById('statsGrid');
     const contentGrid = document.getElementById('contentGrid');
+    const csvModal = document.getElementById('csvModal');
+    const csvPreview = document.getElementById('csvPreview');
+    const modalClose = document.getElementById('modalClose');
     
     // Form inputs
     const appVersionInput = document.getElementById('appVersion');
@@ -777,8 +980,8 @@
     releaseDateInput.valueAsDate = new Date();
     
     // Set default values
-    appVersionInput.value = '0.0.1';
-    releaseManagerInput.value = 'Yaswanth Jagilanka';
+    appVersionInput.placeholder = '0.0.0';
+    releaseManagerInput.placeholder = 'Enter your name';
 
     // File input change handler
     csvFileInput.addEventListener('change', handleFileSelect);
@@ -797,6 +1000,16 @@
     convertBtn.addEventListener('click', handleFile);
     downloadBtnHeader.addEventListener('click', downloadJSON);
     copyBtn.addEventListener('click', copyToClipboard);
+    previewBtn.addEventListener('click', showPreview);
+    deleteBtn.addEventListener('click', deleteFile);
+    modalClose.addEventListener('click', closeModal);
+
+    // Modal handlers
+    csvModal.addEventListener('click', (e) => {
+      if (e.target === csvModal) {
+        closeModal();
+      }
+    });
 
     function validateForm() {
       const hasFile = csvFileInput.files.length > 0;
@@ -827,16 +1040,68 @@
       }
     }
 
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
     function handleFileSelect() {
       const file = csvFileInput.files[0];
       if (file) {
+        currentFile = file;
         fileName.textContent = file.name;
-        fileSelected.style.display = 'flex';
+        fileSize.textContent = formatFileSize(file.size);
+        
+        // Hide upload area and show file selected
+        uploadArea.classList.add('hidden');
+        fileSelected.classList.add('show');
+        
         validateForm();
       } else {
-        fileSelected.style.display = 'none';
-        validateForm();
+        resetFileSelection();
       }
+    }
+
+    function deleteFile() {
+      csvFileInput.value = '';
+      currentFile = null;
+      resetFileSelection();
+      validateForm();
+    }
+
+    function resetFileSelection() {
+      uploadArea.classList.remove('hidden');
+      fileSelected.classList.remove('show');
+      fileName.textContent = '';
+      fileSize.textContent = '';
+    }
+
+    function showPreview() {
+      if (!currentFile) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const csvContent = e.target.result;
+        const lines = csvContent.split('\n');
+        const previewLines = lines.slice(0, 20); // Show first 20 lines
+        
+        let previewText = previewLines.join('\n');
+        if (lines.length > 20) {
+          previewText += '\n\n... and ' + (lines.length - 20) + ' more lines';
+        }
+        
+        csvPreview.textContent = previewText;
+        csvModal.classList.add('show');
+      };
+      
+      reader.readAsText(currentFile);
+    }
+
+    function closeModal() {
+      csvModal.classList.remove('show');
     }
 
     function showProgress() {
@@ -958,13 +1223,16 @@
             outputContainer.classList.add('show', 'fade-in');
             downloadBtnHeader.style.display = 'flex';
             
-            // Change layout from centered to split
+            // Change layout from centered to top output
             setTimeout(() => {
               contentGrid.classList.remove('centered');
-              contentGrid.classList.add('split');
+              contentGrid.classList.add('top-output');
             }, 300);
             
-            outputContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Scroll to top to show the JSON output
+            setTimeout(() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 600);
             
           } catch (error) {
             hideProgress(progressInterval);
@@ -1021,6 +1289,13 @@
 
     // Initialize form validation
     validateForm();
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && csvModal.classList.contains('show')) {
+        closeModal();
+      }
+    });
   </script>
 </body>
 </html>
